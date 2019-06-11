@@ -1,7 +1,9 @@
 package gio_test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/youngbloood/gio"
 )
@@ -21,6 +23,8 @@ func TestMaster(t *testing.T) {
 		job5{5},
 	)
 
+	time.Sleep(2 * time.Second)
+	fmt.Println("reuslt=", result)
 }
 
 type job1 struct {
