@@ -64,3 +64,8 @@ func (m *Master) Stop() {
 func (m *Master) GetErrs() []error {
 	return m.pool.getErrs()
 }
+
+// GetResult return result
+func (m *Master) GetResult() Result {
+	return m.pool.result
+}
