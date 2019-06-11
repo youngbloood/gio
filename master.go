@@ -47,7 +47,7 @@ func (m *Master) dispatch() {
 }
 
 // Push a jober into jobqueue.
-func (m *Master) Push(job Jober) {
+func (m *Master) Push(jobs ...Jober) {
 	m.jobQueue <- job
 }
 
