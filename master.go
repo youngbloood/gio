@@ -46,9 +46,11 @@ func (m *Master) dispatch() {
 	}
 }
 
-// Push a jober into jobqueue.
+// Push jobs into jobqueue.
 func (m *Master) Push(jobs ...Jober) {
-	m.jobQueue <- job
+	for _, job := range jobs {
+		m.jobQueue <- job
+	}
 }
 
 // Stop . stop all the work.
