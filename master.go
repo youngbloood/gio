@@ -1,55 +1,64 @@
 package gio
 
-type master struct {
-	workerPool chan chan Jober //worker池
+// Master .
+type Master struct {
+	pool *pool
 
-	Result Result //存放worker处理后的结果集
-
-	jobQueue chan Jober //待处理的任务chan
-
-	workerList []*work //存放worker列表，用于停止worker
-
+	jobQueue   chan Jober // undo jober
+	workerList []*work    // work list
 }
 
-func NewMaster(maxWork int, result Result) *master {
+// NewMaster return a new master.
+func NewMaster(maxWork int, result Result) *Master {
 
-	return &master{
-		workerPool: make(chan chan Jober, maxWork),
-		jobQueue:   make(chan Jober, 1.5*maxWork),
-		Result:     result,
+	return &Master{
+		pool: &pool{
+			jobPool: make(chan chan Jober, maxWork),
+			result:  result,
+			errs:    make([]error, 0),
+		},
+		jobQueue:   make(chan Jober, 2*maxWork),
+		workerList: make([]*work, maxWork),
 	}
 }
 
-// Run start all work
-func (m *master) Run() {
-	for i := 0; i <= len(m.workerPool); i++ {
-		work := newWorker(m.workerPool, m.Result, i)
-		m.workerList = append(m.workerList, work)
+// Run start all work.
+func (m *Master) Run() {
+	for i := 0; i < len(m.pool.jobPool); i++ {
+		work := newWorker(i, m.pool)
+		m.workerList[i] = work
 		work.start()
 	}
 	go m.dispatch()
 }
 
-func (m *master) dispatch() {
+func (m *Master) dispatch() {
 	for {
 		select {
 		case job := <-m.jobQueue:
 			go func(job Jober) {
-				//从workerPool中取出一个worker的JobChannel
-				jobChan := <-m.workerPool
-				//向这个JobChannel中发送job，worker中的接收配对操作会被唤醒
+				// read a jobchan from m.pool.jobPoll.
+				jobChan := <-m.pool.jobPool
+				// write the job into jobchan.
 				jobChan <- job
 			}(job)
 		}
 	}
 }
 
-func (m *master) Push(job Jober) {
+// Push a jober into jobqueue.
+func (m *Master) Push(job Jober) {
 	m.jobQueue <- job
 }
 
-func (m *master) Stop() {
+// Stop . stop all the work.
+func (m *Master) Stop() {
 	for _, wrk := range m.workerList {
 		wrk.stop()
 	}
+}
+
+// GetErrs return all errs.
+func (m *Master) GetErrs() []error {
+	return m.pool.getErrs()
 }
