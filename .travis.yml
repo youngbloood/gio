@@ -14,3 +14,5 @@ matrix:
     - go: tip
   script:
     - go test
+  after_success:
+    - codecov
