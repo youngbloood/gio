@@ -1,3 +1,4 @@
+[![Build Status](https://www.travis-ci.org/youngbloood/gio.svg?branch=master)](https://www.travis-ci.org/youngbloood/gio)
 [![codecov](https://codecov.io/gh/youngbloood/gio/branch/master/graph/badge.svg)](https://codecov.io/gh/youngbloood/gio)
 # gio
 goroutine multiplex .
