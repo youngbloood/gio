@@ -13,7 +13,4 @@ matrix:
       env: GO111MODULE=on
     - go: tip
   script:
-    - ./.travis.gogenerate.sh
-    - ./.travis.gofmt.sh
-    - ./.travis.govet.sh
-    - go test -v -race $(go list ./... | grep -v vendor)
+    - go test
