@@ -2,72 +2,58 @@ package gio_test
 
 import (
 	"fmt"
+	"log"
+	"sync"
 	"testing"
-	"time"
+
+	"runtime"
 
 	"github.com/youngbloood/gio"
 )
 
 func TestMaster(t *testing.T) {
 
-	result := make(gio.Result, 5)
+	result := make(Result, 5)
 	m := gio.NewMaster(5, result)
 	m.Run()
-	defer m.Stop()
-
-	m.Push(
-		job1{1},
-		job2{2},
-		job3{3},
-		job4{4},
-		job5{5},
-	)
-
-	time.Sleep(2 * time.Second)
-	fmt.Println("reuslt=", result)
+	var jobs = newJobs(100)
+	go m.Push(jobs...)
+	m.Stop()
+	runtime.Gosched()
+	log.Println("result = ", result)
 }
 
-type job1 struct {
+func newJobs(length int) (jobs []gio.Jober) {
+	for i := 0; i < length; i++ {
+		jobs = append(jobs, job{i})
+	}
+	return
+}
+
+// Next implement by yourself.
+
+// Job is custom job.
+type job struct {
 	A int
 }
 
-func (j job1) Run(result gio.Result) error {
-	result["job1"] = j.A
-	return nil
+// implement the gio.Jober interface
+func (j job) Run(result gio.Saver) error {
+	// ...
+
+	// save the result
+	return result.Save(fmt.Sprintf("job%d", j.A), j.A)
 }
 
-type job2 struct {
-	A int
-}
+var rwmux sync.RWMutex
 
-func (j job2) Run(result gio.Result) error {
-	result["job2"] = j.A
-	return nil
-}
+// Result is custom result
+type Result map[string]interface{}
 
-type job3 struct {
-	A int
-}
-
-func (j job3) Run(result gio.Result) error {
-	result["job3"] = j.A
-	return nil
-}
-
-type job4 struct {
-	A int
-}
-
-func (j job4) Run(result gio.Result) error {
-	result["job4"] = j.A
-	return nil
-}
-
-type job5 struct {
-	A int
-}
-
-func (j job5) Run(result gio.Result) error {
-	result["job"] = j.A
+// implement the gio.Saver interface.(you can handle it with sync or async)
+func (r Result) Save(v ...interface{}) error {
+	rwmux.Lock()
+	r[v[0].(string)] = v[1]
+	rwmux.Unlock()
 	return nil
 }

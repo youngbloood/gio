@@ -1,3 +1,6 @@
 package gio
 
-type Result map[string]interface{}
+// Saver interface
+type Saver interface {
+	Save(...interface{}) error
+}

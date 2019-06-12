@@ -1,12 +1,14 @@
 package gio
 
 import (
+	"context"
 	"sync"
 )
 
 type pool struct {
+	ctx     context.Context
 	jobPool chan chan Jober
-	result  Result
+	result  Saver
 
 	erw  sync.RWMutex
 	errs []error
